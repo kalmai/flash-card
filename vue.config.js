@@ -1,3 +1,5 @@
 module.exports = {
-    publicPath: 'flash-card'
+  publicPath: process.env.NODE_ENV === 'production'
+    ? '/flash-card/'
+    : '/'
 }

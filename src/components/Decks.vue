@@ -1,30 +1,41 @@
 <template>
   <div>
     <p v-if="loading">
-      <img src="../assets/loading.gif" alt="loading"><br />
-      loading, may take up to 30 seconds for first request</p>
-    <div v-for="deck in decks" :key="deck.id">
-      <router-link to="/cards">
-        <p v-on:click="setStateDeckId(deck)">{{deck.deck_name}}</p>
-      </router-link>
-      <p>
-        <span v-on:click="deleteDeck(deck.deck_id)">delete</span>
-      </p>
-      <span v-on:click="nameChangeDeck(deck)">edit</span>
-      <form v-on:submit.prevent="updateDeck()" v-if="deck.showUpdate">
-        <label for="name">Name:</label>
-        <input type="text" v-model="newName" />
+      <img src="../assets/loading.gif" alt="loading" />
+      <br />loading, may take up to 30 seconds for first request
+    </p>
+    <div v-else>
+      <div v-for="deck in decks" :key="deck.id">
+        <!-- <router-link to="/cards"> -->
+        <p>
+          {{deck.deck_name}}
+          <router-link to="/cards">
+            <a v-on:click="setStateDeckId(deck)">view cards</a>
+          </router-link>
+          <router-link to="/quiz">
+            <a v-on:click="setStateDeckId(deck)"> take quiz</a>
+          </router-link>
+        </p>
+        <p v-if="deck.deck_id == 1">i am not responsible for the below decks. below decks can be manipulated by any user</p>
+        <p>
+          <span v-on:click="deleteDeck(deck.deck_id)" v-if="!(deck.deck_id == 1)">delete</span>
+        </p>
+        <span v-on:click="nameChangeDeck(deck)" v-if="!(deck.deck_id == 1)">edit</span>
+        <form v-on:submit.prevent="updateDeck()" v-if="deck.showUpdate">
+          <label for="name">Name:</label>
+          <input type="text" v-model="newName" />
+          <input type="submit" />
+          <button v-on:click="setShowUpdateForm(deck)">cancel</button>
+        </form>
+      </div>
+      <p v-on:click="setShowNewDeckForm()">create a new deck</p>
+      <form v-on:submit.prevent="createDeck()" v-if="showNewDeckForm">
+        <label for="newDeckName">Name:</label>
+        <input type="text" v-model="newDeckName" />
         <input type="submit" />
-        <button v-on:click="setShowUpdateForm(deck)">cancel</button>
+        <button v-on:click="setShowNewDeckForm()">cancel</button>
       </form>
     </div>
-    <p v-on:click="setShowNewDeckForm()">create a new deck</p>
-    <form v-on:submit.prevent="createDeck()" v-if="showNewDeckForm">
-      <label for="newDeckName">Name:</label>
-      <input type="text" v-model="newDeckName" />
-      <input type="submit" />
-      <button v-on:click="setShowNewDeckForm()">cancel</button>
-    </form>
   </div>
 </template>
 
@@ -39,7 +50,7 @@ export default {
       newName: "",
       newDeckName: "",
       showNewDeckForm: false,
-      loading: true
+      loading: true,
     };
   },
   methods: {
@@ -85,12 +96,13 @@ export default {
     setShowNewDeckForm() {
       this.showNewDeckForm = !this.showNewDeckForm;
     },
-    setStateDeckId(deck) {
-      this.$store.commit("SET_DECK_ID", deck.deck_id);
+    async setStateDeckId(deck) {
+      await this.$store.commit("SET_DECK_ID", deck.deck_id);
+      this.$forceUpdate();
     },
-    setShowUpdateForm(deck){
+    setShowUpdateForm(deck) {
       deck.showUpdate = !deck.showUpdate;
-    }
+    },
   },
   created() {
     this.retreiveAllCurrentDecks();
@@ -99,7 +111,7 @@ export default {
     decks: function () {
       this.decks;
     },
-  }
+  },
 };
 </script>
 
