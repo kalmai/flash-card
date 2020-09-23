@@ -1,6 +1,7 @@
 <template>
   <div>
     <div v-if="!showSummary">
+      <p>{{this.deckName}}</p>
       <div v-if="!isStarted">
         <button v-on:click="retreiveOneCard(availableCards)">start</button>
       </div>
@@ -14,6 +15,7 @@
       </div>
     </div>
     <div v-if="showSummary">
+      <p>{{this.deckName}}</p>
       <p>correct</p>
       <div v-for="correctC in correctCards" :key="correctC.id">
         <p>{{correctC.question}}</p>
@@ -42,6 +44,7 @@ export default {
       randomCard: {},
       isStarted: false,
       showSummary: false,
+      deckName: null,
     };
   },
   methods: {
@@ -56,6 +59,7 @@ export default {
         });
         this.$store.commit("SET_CARDS", addProps);
         this.availableCards = this.$store.state.cards;
+        this.deckName = this.$store.state.deckName;
         this.$forceUpdate();
       });
     },

@@ -3,6 +3,7 @@
     <p v-if="loading">
       <img src="../assets/loading.gif" alt="loading" />
     </p>
+    <p>{{this.deckName}}</p>
     <div v-for="card in cards" :key="card.id">
       <p>{{card.question}}</p>
       <p>{{card.answer}}</p>
@@ -48,6 +49,7 @@ export default {
       newExample: "",
       showNewCardForm: false,
       loading: true,
+      deckName: null
     };
   },
   methods: {
@@ -66,9 +68,10 @@ export default {
           };
         });
         this.$store.commit("SET_CARDS", addedProps);
+        this.deckName = this.$store.state.deckName;
         this.cards = this.$store.state.cards;
         this.$forceUpdate();
-        this.loading = !this.loading;
+        this.loading = false;
       });
     },
     async deleteCard(cardId) {

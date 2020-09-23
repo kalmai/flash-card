@@ -11,9 +11,9 @@
           {{deck.deck_name}}
           <router-link to="/cards">
             <a v-on:click="setStateDeckId(deck)">view cards</a>
-          </router-link>
+          </router-link> &nbsp;
           <router-link to="/quiz">
-            <a v-on:click="setStateDeckId(deck)"> take quiz</a>
+            <a v-on:click="setStateDeckId(deck)">take quiz</a>
           </router-link>
         </p>
         <p v-if="deck.deck_id == 1">i am not responsible for the below decks. below decks can be manipulated by any user</p>
@@ -98,6 +98,7 @@ export default {
     },
     async setStateDeckId(deck) {
       await this.$store.commit("SET_DECK_ID", deck.deck_id);
+      await this.$store.commit("SET_DECK_NAME", deck);
       this.$forceUpdate();
     },
     setShowUpdateForm(deck) {
