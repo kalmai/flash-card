@@ -28,12 +28,20 @@
         <p>{{wrongC.answer}}</p>
         <p>{{wrongC.example}}</p>
       </div>
+      <p>enter your username to add score to highscores and proceed to leaderboard, or skip this to view the leaderboard</p>
+      <form v-on:submit.prevent="submitScore()">
+        <label for="userName">Username:</label>
+        <input type="text" v-model="userName" />
+        <input type="submit" />
+        <button v-on:click="skipSubmission()">skip</button>
+      </form>
     </div>
   </div>
 </template>
 
 <script>
 import CardService from "@/services/CardService";
+import ScoreService from "@/services/ScoreService.js";
 export default {
   data() {
     return {
@@ -45,6 +53,8 @@ export default {
       isStarted: false,
       showSummary: false,
       deckName: null,
+      userName: null,
+      score: null,
     };
   },
   methods: {
@@ -79,6 +89,9 @@ export default {
       this.correctCards.push(this.randomCard);
       if (this.availableCards.length == 0) {
         if (confirm("view results")) {
+          let divisor = this.correctCards.length + this.wrongCards.length;
+          const score = 100 * (this.correctCards.length / divisor);
+          this.$store.commit("SET_SCORE", score);
           this.showSummary = true;
         }
       } else if (this.availableCards.length != 0) {
@@ -89,6 +102,9 @@ export default {
       this.wrongCards.push(this.randomCard);
       if (this.availableCards.length == 0) {
         if (confirm("view results")) {
+          let divisor = this.correctCards.length + this.wrongCards.length;
+          const score = 100 * (this.correctCards.length / divisor);
+          this.$store.commit("SET_SCORE", score);
           this.showSummary = true;
         }
       } else if (this.availableCards.length != 0) {
@@ -115,6 +131,31 @@ export default {
     },
     toggleExample() {
       this.randomCard.hideExample = !this.randomCard.hideExample;
+    },
+    async submitScore() {
+      if (this.userName) {
+        let date = new Date();
+        let dd = String(date.getDate()).padStart(2, "0");
+        let mm = String(date.getMonth() + 1).padStart(2, "0");
+        let yyyy = date.getFullYear();
+
+        date = yyyy + "-" + mm + "-" + dd;
+
+        const newScore = {
+          deck_id: this.$store.state.deckId,
+          user_name: this.userName,
+          score: this.$store.state.score,
+          date_inserted: date,
+        };
+        await ScoreService.createScore(newScore);
+        await this.$store.commit("SET_USERNAME", this.userName);
+        this.$router.push({ name: "DeckLeader" });
+      } else {
+        alert("you must enter a username to be on the highscores");
+      }
+    },
+    skipSubmission() {
+      this.$router.push({ name: "DeckLeader" });
     },
   },
   created() {

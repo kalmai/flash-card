@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Cards from '../views/CardView.vue'
 import Quiz from '../views/Quiz.vue'
+import LeaderBoard from '../views/LeaderBoard.vue'
 
 Vue.use(VueRouter)
 
@@ -29,6 +30,11 @@ const routes = [
     path: '/quiz',
     name: 'Quiz',
     component: Quiz
+  },
+  {
+    path: '/deck-leaders',
+    name: 'DeckLeader',
+    component: LeaderBoard
   }
 ]
 
