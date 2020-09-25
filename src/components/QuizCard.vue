@@ -34,7 +34,10 @@
         <input type="text" v-model="userName" />
         <input type="submit" />
         <button v-on:click="skipSubmission()">skip</button>
+        <p>or</p>
+        
       </form>
+      <button v-on:click="retakeQuiz()">retake quiz</button>
     </div>
   </div>
 </template>
@@ -78,6 +81,7 @@ export default {
       this.randomCard =
         availableCards[(availableCards.length * Math.random()) | 0];
       this.filterReadCards(this.randomCard.card_id);
+      this.$forceUpdate();
       return this.randomCard;
     },
     filterReadCards(randomCardId) {
@@ -87,28 +91,32 @@ export default {
     },
     correctCardAdd() {
       this.correctCards.push(this.randomCard);
-      if (this.availableCards.length == 0) {
+      if (this.availableCards.length === 0) {
         if (confirm("view results")) {
           let divisor = this.correctCards.length + this.wrongCards.length;
           const score = 100 * (this.correctCards.length / divisor);
           this.$store.commit("SET_SCORE", score);
           this.showSummary = true;
+          this.$forceUpdate();
         }
-      } else if (this.availableCards.length != 0) {
+      } else if (this.availableCards.length !== 0) {
         this.retreiveOneCard(this.availableCards);
+        this.$forceUpdate();
       }
     },
     wrongCardAdd() {
       this.wrongCards.push(this.randomCard);
-      if (this.availableCards.length == 0) {
+      if (this.availableCards.length === 0) {
         if (confirm("view results")) {
           let divisor = this.correctCards.length + this.wrongCards.length;
           const score = 100 * (this.correctCards.length / divisor);
           this.$store.commit("SET_SCORE", score);
           this.showSummary = true;
+          this.$forceUpdate();
         }
-      } else if (this.availableCards.length != 0) {
+      } else if (this.availableCards.length !== 0) {
         this.retreiveOneCard(this.availableCards);
+        this.$forceUpdate();
       }
     },
     pluralOrNot() {
@@ -153,6 +161,15 @@ export default {
       } else {
         alert("you must enter a username to be on the highscores");
       }
+    },
+    retakeQuiz() {
+      alert(`your score was ${this.$store.state.score}%`);
+      this.$store.commit("SET_USERNAME", null);
+      this.availableCards = this.$store.state.cards;
+      this.wrongCards = [];
+      this.correctCards = [];
+      this.showSummary = false;
+      this.isStarted = false;
     },
     skipSubmission() {
       this.$router.push({ name: "DeckLeader" });
