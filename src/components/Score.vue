@@ -66,7 +66,7 @@ export default {
     },
     loginOrLogout() {
       return this.$store.state.userId == -1
-        ? { text: "login to create, edit, and store scores ", buttonText: "login" }
+        ? { text: "login to make decks, cards, and track progress ", buttonText: "login" }
         : {
             text: `you are logged in as ${this.$store.state.userName} `,
             buttonText: "logout",
