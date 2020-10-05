@@ -4,6 +4,7 @@ import Home from '../views/Home.vue'
 import Cards from '../views/CardView.vue'
 import Quiz from '../views/Quiz.vue'
 import LeaderBoard from '../views/LeaderBoard.vue'
+import LoginView from '../views/LoginView.vue'
 
 Vue.use(VueRouter)
 
@@ -35,6 +36,11 @@ const routes = [
     path: '/deck-leaders',
     name: 'DeckLeader',
     component: LeaderBoard
+  },
+  {
+    path:'/login',
+    name: 'Login',
+    component: LoginView
   }
 ]
 

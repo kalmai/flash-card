@@ -1,8 +1,8 @@
 import axios from 'axios';
 import store from '../store';
 
-const url = "https://flash-card-zrk.herokuapp.com";
-// const url = "http://localhost:8080/";
+// const url = "https://flash-card-zrk.herokuapp.com";
+const url = "http://localhost:8080/";
 
 export default {
     createScore(score){

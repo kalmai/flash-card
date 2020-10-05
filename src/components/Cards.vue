@@ -4,26 +4,32 @@
       <img src="../assets/loading.gif" alt="loading" />
     </p>
     <p>{{this.deckName}}</p>
-    <div v-for="card in cards" :key="card.id">
+    <div v-for="card in cards" :key="card.id" class="card">
       <p>{{card.question}}</p>
       <p>{{card.answer}}</p>
       <p>{{card.example}}</p>
       <p>
-        <span v-on:click="deleteCard(card.card_id)" v-if="!(card.deck_id == 1)">delete</span>
+        <button v-on:click="deleteCard(card.card_id)" v-if="canCrud(card)">delete</button>
       </p>
-      <span v-on:click="handleClick(card)" v-if="!(card.deck_id == 1)">edit</span>
-      <form v-on:submit.prevent="updateCard(card)" v-if="card.showCardUpdate">
+      <button v-on:click="handleClick(card)" v-if="canCrud(card)">edit</button>
+      <form v-on:submit.prevent="updateCard(card)" v-if="card.showCardUpdate" class="editCardForm">
+        <div>
         <label for="question">Question:</label>
         <input type="text" v-model="selectedCard.question" />
+        </div>
+        <div>
         <label for="answer">Answer:</label>
         <input type="text" v-model="selectedCard.answer" />
+        </div>
+        <div>
         <label for="example">Example:</label>
         <input type="text" v-model="selectedCard.example" />
+        </div>
         <input type="submit" />
         <button v-on:click="showUpdateCardFromFlip(card)">cancel</button>
       </form>
     </div>
-    <p v-on:click="showNewCardFormFlip()" v-if="!(this.$store.state.deckId == 1)">create a new card</p>
+    <p v-on:click="showNewCardFormFlip()" v-if="canCreateCard()">create a new card</p>
     <form v-on:submit.prevent="createCard()" v-if="showNewCardForm">
       <label for="newQuestion">Question:</label>
       <input type="text" v-model="newQuestion" />
@@ -96,17 +102,28 @@ export default {
       this.retreiveAllCards();
     },
     async createCard() {
-      const newCard = {
+      let newCard = {
         deck_id: this.$store.state.deckId,
         question: this.newQuestion,
         answer: this.newAnswer,
         example: this.newExample,
+        user_id: this.$store.state.userId
       };
       await CardService.createCard(newCard);
       this.showNewCardFormFlip();
       this.retreiveAllCards();
       this.newCard = {};
     },
+    canCrud(card){
+      return this.$store.state.userId === card.user_id;
+    },
+    canCreateCard(){
+      if(this.$store.state.userId === -1 || this.$store.state.userId !== this.$store.state.deckUserId){
+        return false;
+      }else{
+        return true;
+      }
+    }
   },
   created() {
     this.retreiveAllCards();
@@ -120,4 +137,20 @@ export default {
 </script>
 
 <style>
+.card {
+  background-color: whitesmoke;
+  width: 70vw;
+  margin: 24px auto;
+  padding: 20px;
+  box-shadow: 0px 0px 2px 1px rgba(0,0,0,0.5);
+}
+
+.editCardForm{
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  justify-content: center;
+  align-items: center;
+  margin: 25px auto;
+}
 </style>

@@ -1,43 +1,36 @@
 <template>
   <div>
     <div v-if="!showSummary">
-      <p>{{this.deckName}}</p>
+      <p>{{ this.deckName }}</p>
       <div v-if="!isStarted">
         <button v-on:click="retreiveOneCard(availableCards)">start</button>
       </div>
-      <div v-if="isStarted">
-        <p>{{availableCards.length}} {{pluralOrNot()}}</p>
-        <p>{{randomCard.question}}</p>
-        <p v-on:click="toggleAnswer">{{displayAnswer()}}</p>
-        <p v-on:click="toggleExample">{{displayExample()}}</p>
+      <div v-if="isStarted" class="quizCards">
+        <p>{{ availableCards.length }} {{ pluralOrNot() }}</p>
+        <p>{{ randomCard.question }}</p>
+        <p v-on:click="toggleAnswer">{{ displayAnswer() }}</p>
+        <p v-on:click="toggleExample">{{ displayExample() }}</p>
         <button v-on:click="correctCardAdd()">correct</button>
         <button v-on:click="wrongCardAdd()">wrong</button>
       </div>
     </div>
     <div v-if="showSummary">
-      <p>{{this.deckName}}</p>
+      <p>{{ this.deckName }}</p>
       <p>correct</p>
-      <div v-for="correctC in correctCards" :key="correctC.id">
-        <p>{{correctC.question}}</p>
-        <p>{{correctC.answer}}</p>
-        <p>{{correctC.example}}</p>
+      <div v-for="correctC in correctCards" :key="correctC.id" class="correctCards">
+        <p>{{ correctC.question }}</p>
+        <p>{{ correctC.answer }}</p>
+        <p>{{ correctC.example }}</p>
       </div>
       <p>incorrect</p>
-      <div v-for="wrongC in wrongCards" :key="wrongC.id">
-        <p>{{wrongC.question}}</p>
-        <p>{{wrongC.answer}}</p>
-        <p>{{wrongC.example}}</p>
+      <div v-for="wrongC in wrongCards" :key="wrongC.id" class="wrongCards">
+        <p>{{ wrongC.question }}</p>
+        <p>{{ wrongC.answer }}</p>
+        <p>{{ wrongC.example }}</p>
       </div>
-      <p>enter your username to add score to highscores and proceed to leaderboard, or skip this to view the leaderboard</p>
-      <form v-on:submit.prevent="submitScore()">
-        <label for="userName">Username:</label>
-        <input type="text" v-model="userName" />
-        <input type="submit" />
-        <button v-on:click="skipSubmission()">skip</button>
-        <p>or</p>
-        
-      </form>
       <button v-on:click="retakeQuiz()">retake quiz</button>
+      <p>your score was {{Math.floor(this.$store.state.score)}}% out of {{this.$store.state.cards.length}} {{pluralOrNon()}}</p>
+      <button v-on:click="viewLeaderBoard()">view leaderboard</button>
     </div>
   </div>
 </template>
@@ -92,13 +85,12 @@ export default {
     correctCardAdd() {
       this.correctCards.push(this.randomCard);
       if (this.availableCards.length === 0) {
-        if (confirm("view results")) {
-          let divisor = this.correctCards.length + this.wrongCards.length;
-          const score = 100 * (this.correctCards.length / divisor);
-          this.$store.commit("SET_SCORE", score);
-          this.showSummary = true;
-          this.$forceUpdate();
-        }
+        let divisor = this.$store.state.cards.length;
+        const score = 100 * (this.correctCards.length / divisor);
+        this.$store.commit("SET_SCORE", score);
+        this.submitScore();
+        this.showSummary = true;
+        this.$forceUpdate();
       } else if (this.availableCards.length !== 0) {
         this.retreiveOneCard(this.availableCards);
         this.$forceUpdate();
@@ -107,13 +99,12 @@ export default {
     wrongCardAdd() {
       this.wrongCards.push(this.randomCard);
       if (this.availableCards.length === 0) {
-        if (confirm("view results")) {
-          let divisor = this.correctCards.length + this.wrongCards.length;
-          const score = 100 * (this.correctCards.length / divisor);
-          this.$store.commit("SET_SCORE", score);
-          this.showSummary = true;
-          this.$forceUpdate();
-        }
+        let divisor = this.$store.state.cards.length;
+        const score = 100 * (this.correctCards.length / divisor);
+        this.$store.commit("SET_SCORE", score);
+        this.submitScore();
+        this.showSummary = true;
+        this.$forceUpdate();
       } else if (this.availableCards.length !== 0) {
         this.retreiveOneCard(this.availableCards);
         this.$forceUpdate();
@@ -141,7 +132,7 @@ export default {
       this.randomCard.hideExample = !this.randomCard.hideExample;
     },
     async submitScore() {
-      if (this.userName) {
+      if (this.$store.state.userName) {
         let date = new Date();
         let dd = String(date.getDate()).padStart(2, "0");
         let mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -151,28 +142,27 @@ export default {
 
         const newScore = {
           deck_id: this.$store.state.deckId,
-          user_name: this.userName,
+          user_id: this.$store.state.userId,
           score: this.$store.state.score,
           date_inserted: date,
         };
         await ScoreService.createScore(newScore);
-        await this.$store.commit("SET_USERNAME", this.userName);
-        this.$router.push({ name: "DeckLeader" });
-      } else {
-        alert("you must enter a username to be on the highscores");
+        // this.$router.push({ name: "DeckLeader" });
       }
     },
     retakeQuiz() {
       alert(`your score was ${this.$store.state.score}%`);
-      this.$store.commit("SET_USERNAME", null);
       this.availableCards = this.$store.state.cards;
       this.wrongCards = [];
       this.correctCards = [];
       this.showSummary = false;
       this.isStarted = false;
     },
-    skipSubmission() {
+    viewLeaderBoard() {
       this.$router.push({ name: "DeckLeader" });
+    },
+    pluralOrNon() {
+      return this.$store.state.cards.length === 1 ? "card" : "cards";
     },
   },
   created() {
@@ -187,4 +177,27 @@ export default {
 </script>
 
 <style>
+.quizCards{
+  background-color: whitesmoke;
+  width: 70vw;
+  margin: 24px auto;
+  padding: 20px;
+  box-shadow: 0px 0px 2px 1px rgba(0,0,0,0.5);
+}
+
+.correctCards{
+  background-color: rgb(120, 255, 86);
+  width: 70vw;
+  margin: 24px auto;
+  padding: 20px;
+  box-shadow: 0px 0px 2px 1px rgba(0,0,0,0.5);
+}
+
+.wrongCards{
+  background-color: rgb(255, 95, 67);
+  width: 70vw;
+  margin: 24px auto;
+  padding: 20px;
+  box-shadow: 0px 0px 2px 1px rgba(0,0,0,0.5);
+}
 </style>

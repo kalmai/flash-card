@@ -1,37 +1,88 @@
 <template>
   <div>
+    <span
+      >{{ loginOrLogout().text
+      }}<button v-on:click="logout()">
+        {{ loginOrLogout().buttonText }}
+      </button></span
+    >
     <p v-if="loading">
       <img src="../assets/loading.gif" alt="loading" />
       <br />loading, may take up to 30 seconds for first request
     </p>
     <div v-else>
       <div v-for="deck in decks" :key="deck.id">
-        <!-- <router-link to="/cards"> -->
-        <p>
-          {{deck.deck_name}}
-          <router-link to="/cards">
-            <a v-on:click="setStateDeckId(deck)">view cards</a>
-          </router-link> &nbsp;
-          <router-link to="/quiz">
-            <a v-on:click="setStateDeckId(deck)">take quiz</a>
-          </router-link>
-        </p>
-        <p v-if="deck.deck_id == 1">i am not responsible for the below decks. below decks can be manipulated by any user</p>
-        <p>
-          <span v-on:click="deleteDeck(deck.deck_id)" v-if="!(deck.deck_id == 1)">delete</span>
-        </p>
-        <span v-on:click="nameChangeDeck(deck)" v-if="!(deck.deck_id == 1)">edit</span>
-        <form v-on:submit.prevent="updateDeck()" v-if="deck.showUpdate">
-          <label for="name">Name:</label>
-          <input type="text" v-model="newName" />
-          <input type="submit" />
-          <button v-on:click="setShowUpdateForm(deck)">cancel</button>
-        </form>
+        <div class="eachDeck">
+          <p>
+            {{ deck.deck_name }}
+            <router-link to="/cards">
+              <a v-on:click="setStateDeckId(deck)">view cards</a>
+            </router-link>
+            &nbsp;
+            <router-link to="/quiz">
+              <a v-on:click="setStateDeckId(deck)">take quiz</a>
+            </router-link>
+          </p>
+          <button v-on:click="nameChangeDeck(deck)" v-if="canEditDelete(deck)">
+            edit
+          </button>
+          <form
+            v-on:submit.prevent="updateDeck(findUpdateDeck(deck))"
+            v-if="findUpdateDeck(deck)"
+          >
+            <label for="name">Name:</label>
+            <input type="text" v-model="findUpdateDeck(deck).deck_name" />
+            <input
+              type="radio"
+              id="public"
+              name="visibility"
+              value="true"
+              v-model="findUpdateDeck(deck).is_public"
+            />
+            <label for="public">public</label>
+            <input
+              type="radio"
+              id="private"
+              name="visibility"
+              value="false"
+              v-model="findUpdateDeck(deck).is_public"
+            />
+            <label for="private">private</label>
+            <input type="submit" />
+            <button v-on:click="setShowUpdateForm(deck)">cancel</button>
+          </form>
+          <p>
+            <button
+              v-on:click="deleteDeck(deck.deck_id)"
+              v-if="canEditDelete(deck)"
+            >
+              delete
+            </button>
+          </p>
+        </div>
       </div>
-      <p v-on:click="setShowNewDeckForm()">create a new deck</p>
+      <button v-on:click="setShowNewDeckForm()" v-if="canCreate()">
+        create a new deck
+      </button>
       <form v-on:submit.prevent="createDeck()" v-if="showNewDeckForm">
         <label for="newDeckName">Name:</label>
         <input type="text" v-model="newDeckName" />
+        <input
+          type="radio"
+          id="public"
+          name="visibility"
+          value="true"
+          v-model="newPublicPrivate"
+        />
+        <label for="public">public</label>
+        <input
+          type="radio"
+          id="private"
+          name="visibility"
+          value="false"
+          v-model="newPublicPrivate"
+        />
+        <label for="private">private</label>
         <input type="submit" />
         <button v-on:click="setShowNewDeckForm()">cancel</button>
       </form>
@@ -46,23 +97,18 @@ export default {
   data() {
     return {
       decks: [],
-      selectedDeck: {},
       newName: "",
       newDeckName: "",
       showNewDeckForm: false,
       loading: true,
+      newPublicPrivate: null,
+      inProgressDeckList: [],
     };
   },
   methods: {
     retreiveAllCurrentDecks() {
       DeckService.getDecks().then((response) => {
-        const addedProp = response.data.map((d) => {
-          return {
-            ...d,
-            showUpdate: false,
-          };
-        });
-        this.$store.commit("SET_DECKS", addedProp);
+        this.$store.commit("SET_DECKS", response.data);
         this.decks = this.$store.state.decks;
         this.$forceUpdate();
         this.loading = false;
@@ -75,23 +121,32 @@ export default {
       }
     },
     nameChangeDeck(deck) {
-      this.selectedDeck = {
-        deck_id: deck.deck_id,
-        deck_name: deck.deck_name,
-      };
-      deck.showUpdate = !deck.showUpdate;
-      this.newName = this.selectedDeck.deck_name;
+      if (this.inProgressDeckList.every((d) => deck.deck_id !== d.deck_id)) {
+        this.inProgressDeckList.push({ ...deck });
+      } else {
+        this.setShowUpdateForm(deck);
+      }
     },
-    async updateDeck() {
-      this.selectedDeck.deck_name = this.newName;
-      await DeckService.updateDeck(this.selectedDeck);
+    async updateDeck(deck) {
+      await DeckService.updateDeck(deck);
       this.retreiveAllCurrentDecks();
+      this.$forceUpdate();
     },
     async createDeck() {
-      await DeckService.createDeck(this.newDeckName);
-      this.showNewDeckForm = false;
-      this.retreiveAllCurrentDecks();
-      this.newDeckName = "";
+      let newDeck = {
+        user_id: this.$store.state.userId,
+        deck_name: this.newDeckName,
+        is_public: this.newPublicPrivate,
+      };
+      await DeckService.createDeck(newDeck)
+        .then(() => {
+          this.showNewDeckForm = false;
+          this.retreiveAllCurrentDecks();
+          newDeck = {};
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
     setShowNewDeckForm() {
       this.showNewDeckForm = !this.showNewDeckForm;
@@ -99,10 +154,35 @@ export default {
     async setStateDeckId(deck) {
       await this.$store.commit("SET_DECK_ID", deck.deck_id);
       await this.$store.commit("SET_DECK_NAME", deck);
+      await this.$store.commit("SET_DECK_USER_ID", deck);
       this.$forceUpdate();
     },
     setShowUpdateForm(deck) {
-      deck.showUpdate = !deck.showUpdate;
+      this.inProgressDeckList = this.inProgressDeckList.filter(
+        (d) => deck.deck_id !== d.deck_id
+      );
+    },
+    logout() {
+      this.$store.commit("SET_USERNAME", null);
+      this.$store.commit("SET_USERID", -1);
+      this.$router.push({ name: "Login" });
+    },
+    loginOrLogout() {
+      return this.$store.state.userId == -1
+        ? { text: "you're logged in as a guest ", buttonText: "login" }
+        : {
+            text: `you are logged in as ${this.$store.state.userName} `,
+            buttonText: "logout",
+          };
+    },
+    canEditDelete(deck) {
+      return this.$store.state.userId == deck.user_id ? true : false;
+    },
+    canCreate() {
+      return this.$store.state.userId !== -1;
+    },
+    findUpdateDeck(deck) {
+      return this.inProgressDeckList.find((d) => d.deck_id === deck.deck_id);
     },
   },
   created() {
@@ -117,4 +197,11 @@ export default {
 </script>
 
 <style>
+.eachDeck {
+  background-color: whitesmoke;
+  width: 70vw;
+  margin: 24px auto;
+  padding: 20px;
+  box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.5);
+}
 </style>

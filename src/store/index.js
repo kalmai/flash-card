@@ -10,7 +10,9 @@ export default new Vuex.Store({
     cards:[],
     deckName: null,
     score: null,
-    userName: ""
+    userName: null,
+    userId: -1,
+    deckUserId: null
   },
   mutations: {
     SET_DECKS(state, decks){
@@ -30,6 +32,12 @@ export default new Vuex.Store({
     },
     SET_USERNAME(state, userName){
       this.state.userName = userName;
+    },
+    SET_USERID(state,userId){
+      this.state.userId = userId;
+    },
+    SET_DECK_USER_ID(state,deck){
+      this.state.deckUserId = deck.user_id;
     }
   }
 })

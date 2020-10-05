@@ -1,18 +1,20 @@
 <template>
   <div>
-    <table>
+    <table class="quizScoreTable">
       <tr>
+        <th>rank</th>
         <th>user</th>
         <th>score</th>
       </tr>
       <tr v-for="s in scores" :key="s.id">
+        <td>{{s.rank}}</td>
         <td>{{concealName(s)}}</td>
         <td>{{roundDownScore(s)}}%</td>
       </tr>
       <p>*** other usernames are concealed</p>
       <p
         v-if="!this.userName"
-      >your score was {{this.$store.state.score}}% out of {{this.$store.state.cards.length}} {{pluralOrNon()}}</p>
+      >your score was {{Math.floor(this.$store.state.score)}}% out of {{this.$store.state.cards.length}} {{pluralOrNon()}}</p>
       <button v-on:click="retakeQuiz()">retake quiz</button>
     </table>
   </div>
@@ -25,12 +27,19 @@ export default {
     return {
       scores: [],
       userName: null,
+      rank:1
     };
   },
   methods: {
     async getTopTen() {
       await ScoreService.getTopTen().then((response) => {
-        this.scores = response.data;
+        const addedRank = response.data.map((s)=>{
+          return{
+            ...s,
+            rank: this.rank++
+          };
+        })
+        this.scores = addedRank;
         this.$forceUpdate();
       });
     },
@@ -41,7 +50,6 @@ export default {
       return Math.floor(s.score);
     },
     retakeQuiz() {
-      this.$store.commit("SET_USERNAME", null);
       this.$router.push({ name: "Quiz" });
     },
     pluralOrNon() {
@@ -49,18 +57,23 @@ export default {
     },
     getUserNameFromState() {
       this.userName = this.$store.state.userName;
-    },
+    }
   },
   created() {
     this.getUserNameFromState();
     this.getTopTen();
-  },
-  beforeRouteLeave(){
-      this.$store.commit("SET_USERNAME", null);
   }
 };
 </script>
 
 
 <style>
+.quizScoreTable{
+  margin: 0 auto;
+}
+
+.quizScoreTable > tr {
+  display: flex;
+  justify-content: space-between;
+}
 </style>
