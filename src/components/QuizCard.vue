@@ -1,5 +1,11 @@
 <template>
   <div>
+        <span
+      >{{ loginOrLogout().text
+      }}<button v-on:click="logout()">
+        {{ loginOrLogout().buttonText }}
+      </button></span
+    >
     <div v-if="!showSummary">
       <p>{{ this.deckName }}</p>
       <div v-if="!isStarted">
@@ -164,6 +170,19 @@ export default {
     pluralOrNon() {
       return this.$store.state.cards.length === 1 ? "card" : "cards";
     },
+    loginOrLogout() {
+      return this.$store.state.userId == -1
+        ? { text: "login to create, edit, and store scores ", buttonText: "login" }
+        : {
+            text: `you are logged in as ${this.$store.state.userName} `,
+            buttonText: "logout",
+          };
+    },
+    logout() {
+      this.$store.commit("SET_USERNAME", null);
+      this.$store.commit("SET_USERID", -1);
+      this.$router.push({ name: "Login" });
+    }
   },
   created() {
     this.retreiveAllCards();

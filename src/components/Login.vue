@@ -7,7 +7,7 @@
     </form>
     <p></p>
     <div>
-    <button v-on:click="showRegisterForm()">register a new username</button>
+      <button v-on:click="showRegisterForm()">register a new username</button>
     </div>
     <form v-on:submit.prevent="createNewUser()" v-if="showRegister">
       <p>do not enter a username associated with anything else</p>
@@ -18,7 +18,7 @@
     </form>
     <p></p>
     <div>
-    <button v-on:click="guestLogin()">or login as a guest</button>
+      <button v-on:click="guestLogin()">login as a guest</button>
     </div>
   </div>
 </template>
@@ -40,7 +40,7 @@ export default {
           if (response.status) {
             this.$store.commit("SET_USERNAME", response.data.user_name);
             this.$store.commit("SET_USERID", response.data.user_id);
-            this.$router.push({name: "Home"});
+            this.$router.push({ name: "Home" });
           }
         })
         .catch(() => {
@@ -49,8 +49,8 @@ export default {
         });
     },
     guestLogin() {
-                    this.$store.commit("SET_USERNAME", null);
-            this.$store.commit("SET_USERID", -1);
+      this.$store.commit("SET_USERNAME", null);
+      this.$store.commit("SET_USERID", -1);
       this.$router.push({ name: "Home" });
     },
     showRegisterForm() {
@@ -63,6 +63,11 @@ export default {
             alert(
               `account creation successful!\ndo not forget your username: ${this.newUser}\nor else you will need to make a new account`
             );
+            UserService.login(this.newUser).then((response) => {
+            this.$store.commit("SET_USERNAME", response.data.user_name);
+            this.$store.commit("SET_USERID", response.data.user_id);
+            this.$router.push({name: "Home"});
+            })
           }
         })
         .catch(() => {
@@ -75,11 +80,11 @@ export default {
 </script>
 
 <style>
-.loginForms{
+.loginForms {
   background-color: whitesmoke;
   width: 70vw;
   margin: 24px auto;
   padding: 20px;
-  box-shadow: 0px 0px 2px 1px rgba(0,0,0,0.5);
+  box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.5);
 }
 </style>

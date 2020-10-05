@@ -1,5 +1,11 @@
 <template>
   <div>
+        <span
+      >{{ loginOrLogout().text
+      }}<button v-on:click="logout()">
+        {{ loginOrLogout().buttonText }}
+      </button></span
+    >
     <table class="quizScoreTable">
       <tr>
         <th>rank</th>
@@ -57,6 +63,19 @@ export default {
     },
     getUserNameFromState() {
       this.userName = this.$store.state.userName;
+    },
+    loginOrLogout() {
+      return this.$store.state.userId == -1
+        ? { text: "login to create, edit, and store scores ", buttonText: "login" }
+        : {
+            text: `you are logged in as ${this.$store.state.userName} `,
+            buttonText: "logout",
+          };
+    },
+    logout() {
+      this.$store.commit("SET_USERNAME", null);
+      this.$store.commit("SET_USERID", -1);
+      this.$router.push({ name: "Login" });
     }
   },
   created() {

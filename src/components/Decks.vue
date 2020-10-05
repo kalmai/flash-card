@@ -169,7 +169,7 @@ export default {
     },
     loginOrLogout() {
       return this.$store.state.userId == -1
-        ? { text: "you're logged in as a guest ", buttonText: "login" }
+        ? { text: "login to create, edit, and store scores ", buttonText: "login" }
         : {
             text: `you are logged in as ${this.$store.state.userName} `,
             buttonText: "logout",
