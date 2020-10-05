@@ -144,9 +144,6 @@ export default {
           this.retreiveAllCurrentDecks();
           newDeck = {};
         })
-        .catch((error) => {
-          console.log(error);
-        });
     },
     setShowNewDeckForm() {
       this.showNewDeckForm = !this.showNewDeckForm;
