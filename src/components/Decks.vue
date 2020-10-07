@@ -60,7 +60,7 @@
             </button>
           </p>
           <p>
-            <button v-on:click="pushToChart(deck)" v-if="canEditDelete(deck)">view progress</button>
+            <button v-on:click="pushToChart(deck)" v-if="canCreate()">view progress</button>
           </p>
         </div>
       </div>
