@@ -5,6 +5,7 @@ import Cards from '../views/CardView.vue'
 import Quiz from '../views/Quiz.vue'
 import LeaderBoard from '../views/LeaderBoard.vue'
 import LoginView from '../views/LoginView.vue'
+import ChartView from '../views/ChartView.vue'
 
 Vue.use(VueRouter)
 
@@ -41,6 +42,11 @@ const routes = [
     path:'/login',
     name: 'Login',
     component: LoginView
+  },
+  {
+    path:'/chart',
+    name: 'Chart',
+    component: ChartView
   }
 ]
 

@@ -13,5 +13,8 @@ export default {
     },
     getTopTen(){
         return axios.get(`${url}/leaderboard/${store.state.deckId}`);
+    },
+    getScoresFromTo(userId, deckId, start,end){
+        return axios.get(`${url}/score-range`,{params :{userId,deckId,start,end}});
     }
 }

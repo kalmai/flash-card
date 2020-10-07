@@ -59,6 +59,9 @@
               delete
             </button>
           </p>
+          <p>
+            <button v-on:click="pushToChart(deck)" v-if="canEditDelete(deck)">view progress</button>
+          </p>
         </div>
       </div>
       <button v-on:click="setShowNewDeckForm()" v-if="canCreate()">
@@ -181,6 +184,11 @@ export default {
     findUpdateDeck(deck) {
       return this.inProgressDeckList.find((d) => d.deck_id === deck.deck_id);
     },
+    async pushToChart(deck){
+      await this.$store.commit("SET_DECK_ID", deck.deck_id);
+      await this.$store.commit("SET_DECK_NAME", deck);
+      this.$router.push({name:"Chart"});
+    }
   },
   created() {
     this.retreiveAllCurrentDecks();
